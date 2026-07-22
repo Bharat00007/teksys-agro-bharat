@@ -72,7 +72,12 @@ CREATE TABLE IF NOT EXISTS pickup_requests (
     weight_kg NUMERIC(10, 2) NOT NULL,
     rate_per_kg NUMERIC(10, 2),
     estimated_amount NUMERIC(12, 2),
-    pickup_address TEXT NOT NULL,
+    pickup_address TEXT,
+    pickup_latitude DOUBLE PRECISION,
+    pickup_longitude DOUBLE PRECISION,
+    pickup_address_readable TEXT,
+    pickup_landmark TEXT,
+    location_set_at TIMESTAMP WITH TIME ZONE,
     preferred_date DATE NOT NULL,
     notes TEXT,
     status VARCHAR(50) DEFAULT 'created' CHECK (status IN (
