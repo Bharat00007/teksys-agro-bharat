@@ -8,8 +8,8 @@ export const authService = {
   async registerFarmer(dto: {
     name: string; phone: string; email: string; password: string;
     area: string; village?: string;
-    bank_account_number: string; ifsc_code: string;
-    account_holder_name: string; bank_name?: string;
+    bank_account_number?: string; ifsc_code?: string;
+    account_holder_name?: string; bank_name?: string;
   }) {
     const { data: existing } = await supabase
       .from('users').select('id').eq('email', dto.email).single();
@@ -32,13 +32,15 @@ export const authService = {
       user_id: user.id, area: dto.area, village: dto.village,
     });
 
-    await supabase.from('farmer_bank_details').insert({
-      farmer_id: user.id,
-      account_holder_name: dto.account_holder_name,
-      bank_account_number: dto.bank_account_number,
-      ifsc_code: dto.ifsc_code,
-      bank_name: dto.bank_name,
-    });
+    if (dto.account_holder_name || dto.bank_account_number || dto.ifsc_code || dto.bank_name) {
+      await supabase.from('farmer_bank_details').insert({
+        farmer_id: user.id,
+        account_holder_name: dto.account_holder_name || '',
+        bank_account_number: dto.bank_account_number || '',
+        ifsc_code: dto.ifsc_code || '',
+        bank_name: dto.bank_name || '',
+      });
+    }
 
     const token = signToken({ userId: user.id, email: user.email, phone: user.phone, role: 'farmer', name: user.name });
     return { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: 'farmer' }, token };

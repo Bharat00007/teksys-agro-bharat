@@ -176,15 +176,17 @@ export const adminService = {
   },
 
   async getSummary() {
-    const [pickups, bills, payments] = await Promise.all([
+    const [pickups, bills, payments, product_requests] = await Promise.all([
       supabase.from('pickup_requests').select('status', { count: 'exact' }),
       supabase.from('bills').select('status, total_amount'),
       supabase.from('payments').select('status, amount'),
+      supabase.from('product_requests').select('status', { count: 'exact' }),
     ]);
     return {
       pickups: pickups.data || [],
       bills: bills.data || [],
       payments: payments.data || [],
+      product_requests: product_requests.data || [],
     };
   },
 

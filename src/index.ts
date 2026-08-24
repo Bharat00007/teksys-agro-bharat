@@ -33,7 +33,34 @@ try {
   app.use('/api/bill', billRoutes);
   app.use('/api/foodunit', foodunitRoutes);
 
-  console.log('✅ All routes loaded');
+  // Admin Inventory Management
+  const inventoryRoutes = require('./routes/inventory.routes').default;
+  app.use('/api/admin/inventory', inventoryRoutes);
+
+  // Marketplace routes (Phase 2)
+  const customerRoutes = require('./routes/customer.routes').default;
+  const categoryRoutes = require('./routes/category.routes').default;
+  const productRoutes = require('./routes/product.routes').default;
+  const cartRoutes = require('./routes/cart.routes').default;
+  const wishlistRoutes = require('./routes/wishlist.routes').default;
+  const orderRoutes = require('./routes/order.routes').default;
+  const reviewRoutes = require('./routes/review.routes').default;
+  const couponRoutes = require('./routes/coupon.routes').default;
+  const notificationRoutes = require('./routes/notification.routes').default;
+  const productRequestRoutes = require('./routes/product-request.routes').default;
+
+  app.use('/api/marketplace/customer', customerRoutes);
+  app.use('/api/marketplace/categories', categoryRoutes);
+  app.use('/api/marketplace/products', productRoutes);
+  app.use('/api/marketplace/cart', cartRoutes);
+  app.use('/api/marketplace/wishlist', wishlistRoutes);
+  app.use('/api/marketplace/orders', orderRoutes);
+  app.use('/api/marketplace/reviews', reviewRoutes);
+  app.use('/api/marketplace/coupons', couponRoutes);
+  app.use('/api/marketplace/notifications', notificationRoutes);
+  app.use('/api/marketplace/product-requests', productRequestRoutes);
+
+  console.log('✅ All routes loaded (Logistics + Marketplace)');
 } catch (err) {
   console.error('Route loading error:', err);
 }

@@ -1,6 +1,6 @@
 import { Request } from 'express';
 
-export type UserRole = 'farmer' | 'agent' | 'admin' | 'food_unit';
+export type UserRole = 'farmer' | 'agent' | 'admin' | 'food_unit' | 'customer';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -29,6 +29,13 @@ export type PickupStatus =
   | 'cancelled';
 
 export type VehicleType = 'bike' | 'three_wheeler' | 'mini_truck' | 'truck';
+
+// Marketplace types
+export type MarketplaceOrderStatus = 'confirmed' | 'packed' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled' | 'returned';
+export type PaymentMethod = 'upi' | 'card' | 'net_banking' | 'wallet' | 'cod';
+export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded';
+export type NotificationType = 'order' | 'offer' | 'promotion' | 'price_drop' | 'general';
+export type DiscountType = 'percentage' | 'flat';
 
 export function getVehicleTypeForWeight(weight: number): VehicleType {
   if (weight <= 50) return 'bike';
