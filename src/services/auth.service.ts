@@ -134,8 +134,13 @@ export const authService = {
     });
     if (error) throw new Error('Could not generate reset OTP');
 
-    // In a real app, send email/SMS here. We log to console for testing.
-    console.log(`[TEST MODE] Password Reset OTP for ${dto.email || dto.phone}: ${otp}`);
+    if (user.email) {
+      const { emailService } = require('./email.service');
+      await emailService.sendResetOtp(user.email, otp);
+    } else {
+      console.log(`[TEST MODE] Password Reset OTP for ${dto.phone}: ${otp}`);
+    }
+    
     return { message: 'Password reset OTP sent successfully', test_otp: otp };
   },
 
