@@ -21,4 +21,22 @@ export const authController = {
       sendSuccess(res, data, 'Login successful');
     } catch (err: any) { sendError(res, err.message, 401); }
   },
+  async forgotPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const data = await authService.forgotPassword(req.body);
+      sendSuccess(res, data, data.message);
+    } catch (err: any) { sendError(res, err.message, 400); }
+  },
+  async verifyResetOtp(req: Request, res: Response): Promise<void> {
+    try {
+      const data = await authService.verifyResetOtp(req.body);
+      sendSuccess(res, data, data.message);
+    } catch (err: any) { sendError(res, err.message, 400); }
+  },
+  async resetPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const data = await authService.resetPassword(req.body);
+      sendSuccess(res, data, data.message);
+    } catch (err: any) { sendError(res, err.message, 400); }
+  }
 };

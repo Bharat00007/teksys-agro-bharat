@@ -108,4 +108,91 @@ export const authService = {
     const token = signToken({ userId: user.id, email: user.email, phone: user.phone, role: user.role, name: user.name });
     return { user: { id: user.id, name: user.name, email: user.email, phone: user.phone, role: user.role }, profile, token };
   },
+
+  async forgotPassword(dto: { email?: string; phone?: string }) {
+    let query = supabase.from('users').select('id, email, phone');
+    if (dto.email) query = query.eq('email', dto.email);
+    else if (dto.phone) query = query.eq('phone', dto.phone);
+    else throw new Error('Email or phone is required');
+
+    const { data: user } = await query.single();
+    if (!user) throw new Error('User not found');
+
+    // Generate 6 digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const expiresAt = new Date();
+    expiresAt.setMinutes(expiresAt.getMinutes() + 15); // 15 mins expiry
+
+    // Delete existing unused OTPs
+    await supabase.from('password_resets').delete().eq('user_id', user.id).eq('used', false);
+
+    const { error } = await supabase.from('password_resets').insert({
+      user_id: user.id,
+      otp,
+      expires_at: expiresAt.toISOString(),
+      used: false
+    });
+    if (error) throw new Error('Could not generate reset OTP');
+
+    // In a real app, send email/SMS here. We log to console for testing.
+    console.log(`[TEST MODE] Password Reset OTP for ${dto.email || dto.phone}: ${otp}`);
+    return { message: 'Password reset OTP sent successfully', test_otp: otp };
+  },
+
+  async verifyResetOtp(dto: { email?: string; phone?: string; otp: string }) {
+    let query = supabase.from('users').select('id');
+    if (dto.email) query = query.eq('email', dto.email);
+    else if (dto.phone) query = query.eq('phone', dto.phone);
+    else throw new Error('Email or phone is required');
+
+    const { data: user } = await query.single();
+    if (!user) throw new Error('User not found');
+
+    const { data: resetRecord } = await supabase.from('password_resets')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('otp', dto.otp)
+      .eq('used', false)
+      .single();
+
+    if (!resetRecord) throw new Error('Invalid or expired OTP');
+
+    if (new Date(resetRecord.expires_at) < new Date()) {
+      throw new Error('OTP has expired');
+    }
+
+    const JWT_SECRET = process.env.JWT_SECRET || 'teksys_agro_secret';
+    const jwt = require('jsonwebtoken');
+    const resetToken = jwt.sign({ userId: user.id, purpose: 'password_reset' }, JWT_SECRET, { expiresIn: '15m' });
+    
+    await supabase.from('password_resets').update({ used: true }).eq('id', resetRecord.id);
+
+    return { message: 'OTP verified', resetToken };
+  },
+
+  async resetPassword(dto: { resetToken: string; newPassword: string }) {
+    const JWT_SECRET = process.env.JWT_SECRET || 'teksys_agro_secret';
+    const jwt = require('jsonwebtoken');
+    let decoded;
+    
+    try {
+      decoded = jwt.verify(dto.resetToken, JWT_SECRET);
+    } catch (err) {
+      throw new Error('Invalid or expired reset token');
+    }
+
+    if (decoded.purpose !== 'password_reset' || !decoded.userId) {
+      throw new Error('Invalid token purpose');
+    }
+
+    const hash = await bcrypt.hash(dto.newPassword, 12);
+    
+    const { error } = await supabase.from('user_passwords')
+      .update({ password_hash: hash })
+      .eq('user_id', decoded.userId);
+
+    if (error) throw new Error('Failed to update password');
+
+    return { message: 'Password updated successfully' };
+  }
 };
