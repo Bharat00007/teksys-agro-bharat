@@ -8,6 +8,12 @@ const router = Router();
 router.post('/register', customerController.register);
 router.post('/login', customerController.login);
 
+// Password Reset Routes (handled by authController for unified logic)
+import { authController } from '../controllers/auth.controller';
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/verify-reset-otp', authController.verifyResetOtp);
+router.post('/reset-password', authController.resetPassword);
+
 // Protected routes (customer only)
 router.get('/profile', authenticate, authorize('customer'), customerController.getProfile);
 router.put('/profile', authenticate, authorize('customer'), customerController.updateProfile);
