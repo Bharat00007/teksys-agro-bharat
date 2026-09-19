@@ -1,4 +1,8 @@
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+
+// Force IPv4 resolution to prevent ENETUNREACH on IPv6 networks
+dns.setDefaultResultOrder('ipv4first');
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
@@ -14,7 +18,7 @@ export const emailService = {
   async sendResetOtp(email: string, otp: string) {
     try {
       const mailOptions = {
-        from: `"Teksys Agro" <${process.env.SMTP_USER}>`,
+        from: `"Teksys Agro" <${process.env.SMTP_FROM || process.env.SMTP_USER}>`,
         to: email,
         subject: 'Password Reset Verification Code',
         html: `
